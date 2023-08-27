@@ -1,8 +1,6 @@
 pandas~=1.5.2
 numpy~=1.23.0
 matplotlib~=3.4.3
-imageio # for making mp4s
-imageio[ffmpeg] # for making mp4s
 aiohttp
 beautifulsoup4
 python-dotenv

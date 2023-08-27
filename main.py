@@ -6,7 +6,8 @@ from matplotlib.font_manager import FontProperties
 import numpy as np
 import pandas as pd
 
-# Custom Orpheus font
+# font
+plt.rcParams.update({'font.size': 14})
 orpheus_font = FontProperties(fname='./fonts/orpheus-regular.ttf')
 
 # Existing logic for generating data
@@ -37,23 +38,23 @@ for day in range(1, days):
 def dollar_format(x, pos):
     return f'${int(x):,.0f}'
 
-# Create the figure and the line that will be animated
-fig, ax = plt.subplots(figsize=(8.4, 4.5))  # Dimensions optimized for LinkedIn
+fig, ax = plt.subplots(figsize=(12, 6.28))  # Dimensions optimized for LinkedIn
 
 # Apply custom font to all text elements
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] + ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontproperties(orpheus_font)
 
-line1, = ax.plot([], [], label='Portfolio Value')
-line2, = ax.plot([], [], label='Basis with Harvesting')
-line3, = ax.plot([], [], label='Basis without Harvesting')
+line1, = ax.plot([], [], label='Portfolio Value', linewidth=1.5)
+line2, = ax.plot([], [], label='Basis with Harvesting', linewidth=1.5)
+line3, = ax.plot([], [], label='Basis without Harvesting', linewidth=1.5)
 
 def init():
     line1.set_data([], [])
     line2.set_data([], [])
     line3.set_data([], [])
     legend_labels = ['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss']
-    ax.legend(legend_labels, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, frameon=False, prop=orpheus_font)
+    ax.legend(legend_labels, loc='lower left', ncol=1, frameon=False, prop=orpheus_font)
+    ax.set_title('Tax-Loss Harvesting', fontproperties=orpheus_font, pad=5, fontsize=28)
     return line1, line2, line3,
 
 # The update function for the animation
@@ -71,7 +72,7 @@ ax.set_xlim(0, days)
 ax.set_ylim(0, max(df['Portfolio Value']) + 10000)
 ax.set_xlabel('Day')
 ax.yaxis.set_major_formatter(FuncFormatter(dollar_format))
-ani = animation.FuncAnimation(fig, update, frames=range(days), init_func=init, blit=True)
+ani = animation.FuncAnimation(fig, update, frames=range(days), init_func=init, blit=False)
 
 writer = FFMpegWriter(fps=25, metadata=dict(artist='Me'), bitrate=1800)
 ani.save('animation.mp4', writer=writer)
