@@ -38,7 +38,7 @@ def dollar_format(x, pos):
     return f'${int(x):,.0f}'
 
 # Create the figure and the line that will be animated
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(8.4, 4.5))  # Dimensions optimized for LinkedIn
 
 # Apply custom font to all text elements
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] + ax.get_xticklabels() + ax.get_yticklabels()):
@@ -52,6 +52,8 @@ def init():
     line1.set_data([], [])
     line2.set_data([], [])
     line3.set_data([], [])
+    legend_labels = ['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss']
+    ax.legend(legend_labels, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, frameon=False, prop=orpheus_font)
     return line1, line2, line3,
 
 # The update function for the animation
@@ -63,16 +65,13 @@ def update(day):
         loss_amount = df['Basis with Harvesting'][day - 1] - df['Basis with Harvesting'][day]
         normalized_loss = loss_amount / df['Portfolio Value'][day]
         ax.scatter(day, df['Portfolio Value'][day], s=normalized_loss * 15000, color='green', label='Harvested Loss' if day == 1 else "")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False, prop=orpheus_font)  # Fixed the legend
     return line1, line2, line3,
 
 ax.set_xlim(0, days)
 ax.set_ylim(0, max(df['Portfolio Value']) + 10000)
 ax.set_xlabel('Day')
-ax.set_ylabel('Value ($)')
 ax.yaxis.set_major_formatter(FuncFormatter(dollar_format))
 ani = animation.FuncAnimation(fig, update, frames=range(days), init_func=init, blit=True)
 
-# Save the animation using FFMpegWriter
-writer = FFMpegWriter(fps=20, metadata=dict(artist='Me'), bitrate=1800)
+writer = FFMpegWriter(fps=25, metadata=dict(artist='Me'), bitrate=1800)
 ani.save('animation.mp4', writer=writer)
