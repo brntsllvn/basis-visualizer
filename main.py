@@ -1,13 +1,13 @@
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation 
+import matplotlib.animation as animation
 from matplotlib.animation import FFMpegWriter
 from matplotlib.ticker import FuncFormatter
 from matplotlib.font_manager import FontProperties
 import numpy as np
 import pandas as pd
 
-# font
-plt.rcParams.update({'font.size': 14})
+# Font
+plt.rcParams.update({'font.size': 16})
 orpheus_font = FontProperties(fname='./fonts/orpheus-regular.ttf')
 
 # Existing logic for generating data
@@ -38,23 +38,33 @@ for day in range(1, days):
 def dollar_format(x, pos):
     return f'${int(x):,.0f}'
 
-fig, ax = plt.subplots(figsize=(12, 6.28))  # Dimensions optimized for LinkedIn
+# Initialize figure and axis
+fig, ax = plt.subplots(figsize=(12, 6.28))
+fig.patch.set_facecolor('#E5DFF5')  # Set background color for entire figure
 
 # Apply custom font to all text elements
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] + ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontproperties(orpheus_font)
 
-line1, = ax.plot([], [], label='Portfolio Value', linewidth=1.5)
-line2, = ax.plot([], [], label='Basis with Harvesting', linewidth=1.5)
-line3, = ax.plot([], [], label='Basis without Harvesting', linewidth=1.5)
+line1, = ax.plot([], [], label='Portfolio Value', linewidth=1)
+line2, = ax.plot([], [], label='Basis with Harvesting', linewidth=1)
+line3, = ax.plot([], [], label='Basis without Harvesting', linewidth=1)
 
 def init():
     line1.set_data([], [])
     line2.set_data([], [])
     line3.set_data([], [])
+    # Dummy scatter for legend to get green dot in legend
+    dummy_scatter = ax.scatter([], [], s=0, color='green', label='Harvested Loss')
     legend_labels = ['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss']
     ax.legend(legend_labels, loc='lower left', ncol=1, frameon=False, prop=orpheus_font)
-    ax.set_title('Tax-Loss Harvesting', fontproperties=orpheus_font, pad=5, fontsize=28)
+    ax.set_title('Tax-Loss Harvesting', fontproperties=orpheus_font, pad=10, fontsize=32)
+    # Add watermark text
+    x_center = days / 2
+    y_center = max(df['Portfolio Value']) / 2
+    ax.text(x_center, y_center, '© 2023 The Tax Alpha Insider', 
+            fontsize=24, ha='center', va='center', alpha=0.5, 
+            color='#363E21', fontproperties=orpheus_font, zorder=0)
     return line1, line2, line3,
 
 # The update function for the animation
@@ -62,10 +72,11 @@ def update(day):
     line1.set_data(df['Day'][:day], df['Portfolio Value'][:day])
     line2.set_data(df['Day'][:day], df['Basis with Harvesting'][:day])
     line3.set_data(df['Day'][:day], df['Basis without Harvesting'][:day])
+        
     if day > 0 and df['Basis with Harvesting'][day] < df['Basis with Harvesting'][day - 1]:
         loss_amount = df['Basis with Harvesting'][day - 1] - df['Basis with Harvesting'][day]
         normalized_loss = loss_amount / df['Portfolio Value'][day]
-        ax.scatter(day, df['Portfolio Value'][day], s=normalized_loss * 15000, color='green', label='Harvested Loss' if day == 1 else "")
+        ax.scatter(day, df['Portfolio Value'][day], s=normalized_loss * 10000, color='green', label='Harvested Loss' if day == 1 else "")
     return line1, line2, line3,
 
 ax.set_xlim(0, days)
