@@ -26,14 +26,18 @@ basis = shares * initial_stock_price
 
 df = pd.DataFrame(columns=['Day', 'Stock Price', 'Portfolio Value', 'Cash Deposited', 'Basis with Harvesting', 'Basis without Harvesting'])
 df.loc[0] = [0, initial_stock_price, shares * initial_stock_price, initial_cash, basis, basis]
+df['Cumulative Harvested Losses'] = 0  # Initialize with zeros
 
+cumulative_loss = 0
 for day in range(1, days):
     shock = np.random.normal(loc=daily_drift, scale=daily_volatility)
     stock_price *= np.exp(shock)
     portfolio_value = shares * stock_price
     if portfolio_value < basis:
+        loss_amount = basis - portfolio_value
+        cumulative_loss += loss_amount
         basis = portfolio_value
-    df.loc[day] = [day, stock_price, portfolio_value, initial_cash, basis, shares * initial_stock_price]
+    df.loc[day] = [day, stock_price, portfolio_value, initial_cash, basis, shares * initial_stock_price, cumulative_loss]
 
 def dollar_format(x, pos):
     return f'${int(x):,.0f}'
@@ -57,8 +61,10 @@ def init():
     line3.set_data([], [])
     # Dummy scatter for the legend to get a green dot
     dummy_scatter = ax.scatter([], [], s=100, color='green', label='Harvested Loss')
-    legend_labels = [line1, line2, line3, dummy_scatter]
-    ax.legend(handles=legend_labels, labels=['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss'], loc='lower left', ncol=1, frameon=False, prop=orpheus_font)
+    # Dummy area fill for legend
+    cumulative_harvest = ax.fill_between([], [], color='lightgreen', alpha=0.6, label='Cumulative Harvested Losses')
+    legend_labels = [line1, line2, line3, dummy_scatter, cumulative_harvest]
+    ax.legend(handles=legend_labels, labels=['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss', 'Cumulative Harvested Losses'], loc='lower left', ncol=1, frameon=False, prop=orpheus_font)
     
     # Main Title
     ax.annotate('Scenario # 1: No Wash Sale Rule', xy=(0.5, 1), xycoords='axes fraction', fontsize=32, 
@@ -94,6 +100,10 @@ def update(day):
         loss_amount = df['Basis with Harvesting'][day - 1] - df['Basis with Harvesting'][day]
         normalized_loss = loss_amount / df['Portfolio Value'][day]
         ax.scatter(day, df['Portfolio Value'][day], s=normalized_loss * 10000, color='green', label='Harvested Loss' if day == 1 else "")
+    
+    ax.fill_between(df['Day'][:day], 0, df['Cumulative Harvested Losses'][:day], 
+        color='lightgreen', alpha=0.6, label='Cumulative Harvested Losses' if day==1 else "")
+    
     return line1, line2, line3,
 
 ax.set_xlim(0, days)
