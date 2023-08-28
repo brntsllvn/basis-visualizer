@@ -40,31 +40,48 @@ def dollar_format(x, pos):
 
 # Initialize figure and axis
 fig, ax = plt.subplots(figsize=(12, 6.28))
+plt.subplots_adjust(top=0.80)
 fig.patch.set_facecolor('#E5DFF5')  # Set background color for entire figure
 
 # Apply custom font to all text elements
 for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] + ax.get_xticklabels() + ax.get_yticklabels()):
     item.set_fontproperties(orpheus_font)
 
-line1, = ax.plot([], [], label='Portfolio Value', linewidth=1)
-line2, = ax.plot([], [], label='Basis with Harvesting', linewidth=1)
-line3, = ax.plot([], [], label='Basis without Harvesting', linewidth=1)
+line1, = ax.plot([], [], 'k-', label='Portfolio Value', linewidth=1)  # Black solid
+line2, = ax.plot([], [], 'b--', label='Basis with Harvesting', linewidth=1)  # Blue dashed
+line3, = ax.plot([], [], 'r--', label='Basis without Harvesting', linewidth=1)  # Red dashed
 
 def init():
     line1.set_data([], [])
     line2.set_data([], [])
     line3.set_data([], [])
-    # Dummy scatter for legend to get green dot in legend
-    dummy_scatter = ax.scatter([], [], s=0, color='green', label='Harvested Loss')
-    legend_labels = ['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss']
-    ax.legend(legend_labels, loc='lower left', ncol=1, frameon=False, prop=orpheus_font)
-    ax.set_title('Tax-Loss Harvesting', fontproperties=orpheus_font, pad=10, fontsize=32)
+    # Dummy scatter for the legend to get a green dot
+    dummy_scatter = ax.scatter([], [], s=100, color='green', label='Harvested Loss')
+    legend_labels = [line1, line2, line3, dummy_scatter]
+    ax.legend(handles=legend_labels, labels=['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss'], loc='lower left', ncol=1, frameon=False, prop=orpheus_font)
+    
+    # Main Title
+    ax.annotate('Scenario # 1: No Wash Sale Rule', xy=(0.5, 1), xycoords='axes fraction', fontsize=32, 
+                xytext=(0, 40), textcoords='offset points',
+                ha='center', va='baseline', fontproperties=orpheus_font)
+    
+    # Subtitle
+    ax.annotate('Tax-Loss Harvesting Case Studies', xy=(0.5, 1), xycoords='axes fraction', fontsize=18, 
+                xytext=(0, 15), textcoords='offset points',
+                ha='center', va='baseline', fontproperties=orpheus_font)
+    
+    # ax.set_title('Tax-Loss Harvesting Illustrated', fontproperties=orpheus_font, pad=10, fontsize=32)
+    # ax.text(0.5, 1.00, 'Scenario # 1: No Wash Sale Rule', transform=ax.transAxes, ha='center', va='center', fontsize=18, fontproperties=orpheus_font)
+    
     # Add watermark text
     x_center = days / 2
     y_center = max(df['Portfolio Value']) / 2
-    ax.text(x_center, y_center, '© 2023 The Tax Alpha Insider', 
-            fontsize=24, ha='center', va='center', alpha=0.5, 
+    ax.text(x_center, y_center, 'The Tax Alpha Insider', 
+            fontsize=28, ha='center', va='center', alpha=0.5, 
             color='#363E21', fontproperties=orpheus_font, zorder=0)
+    ax.text(x_center, y_center - 0.10 * max(df['Portfolio Value']), '© 2023', 
+        fontsize=12, ha='center', va='center', alpha=0.5, 
+        color='#363E21', fontproperties=orpheus_font, zorder=0)
     return line1, line2, line3,
 
 # The update function for the animation
