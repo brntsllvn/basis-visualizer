@@ -64,22 +64,17 @@ def init():
     # Dummy area fill for legend
     cumulative_harvest = ax.fill_between([], [], color='lightgreen', alpha=0.6, label='Cumulative Harvested Losses')
     legend_labels = [line1, line2, line3, dummy_scatter, cumulative_harvest]
-    ax.legend(handles=legend_labels, labels=['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss', 'Cumulative Harvested Losses'], loc='lower left', ncol=1, frameon=False, prop=orpheus_font)
+    ax.legend(handles=legend_labels, labels=['Portfolio Value', 'Basis with Harvesting', 'Basis without Harvesting', 'Harvested Loss', 'Cumulative Harvested Losses'], loc='lower left', bbox_to_anchor=(0, 0.05), ncol=1, frameon=False, prop=orpheus_font)
     
-    # Main Title
-    ax.annotate('Scenario # 1: No Wash Sale Rule', xy=(0.5, 1), xycoords='axes fraction', fontsize=32, 
-                xytext=(0, 40), textcoords='offset points',
-                ha='center', va='baseline', fontproperties=orpheus_font)
-    
-    # Subtitle
+    # Titles
     ax.annotate('Tax-Loss Harvesting Case Studies', xy=(0.5, 1), xycoords='axes fraction', fontsize=18, 
+                xytext=(0, 50), textcoords='offset points',
+                ha='center', va='baseline', fontproperties=orpheus_font)
+    ax.annotate('Scenario # 1: No Wash Sale Rule', xy=(0.5, 1), xycoords='axes fraction', fontsize=32, 
                 xytext=(0, 15), textcoords='offset points',
                 ha='center', va='baseline', fontproperties=orpheus_font)
     
-    # ax.set_title('Tax-Loss Harvesting Illustrated', fontproperties=orpheus_font, pad=10, fontsize=32)
-    # ax.text(0.5, 1.00, 'Scenario # 1: No Wash Sale Rule', transform=ax.transAxes, ha='center', va='center', fontsize=18, fontproperties=orpheus_font)
-    
-    # Add watermark text
+    # Watermark
     x_center = days / 2
     y_center = max(df['Portfolio Value']) / 2
     ax.text(x_center, y_center, 'The Tax Alpha Insider', 
@@ -88,9 +83,9 @@ def init():
     ax.text(x_center, y_center - 0.10 * max(df['Portfolio Value']), '© 2023', 
         fontsize=12, ha='center', va='center', alpha=0.5, 
         color='#363E21', fontproperties=orpheus_font, zorder=0)
+    
     return line1, line2, line3,
 
-# The update function for the animation
 def update(day):
     line1.set_data(df['Day'][:day], df['Portfolio Value'][:day])
     line2.set_data(df['Day'][:day], df['Basis with Harvesting'][:day])
@@ -103,6 +98,14 @@ def update(day):
     
     ax.fill_between(df['Day'][:day], 0, df['Cumulative Harvested Losses'][:day], 
         color='lightgreen', alpha=0.6, label='Cumulative Harvested Losses' if day==1 else "")
+    
+    # Add label for final data point of cumulative harvested losses
+    if day == days - 1:
+        final_value = df['Cumulative Harvested Losses'].iloc[-1]
+        ax.annotate(f'${int(final_value):,.0f}',
+                    xy=(days-1, final_value),
+                    xytext=(days-10, final_value + 5000),
+                    fontsize=18, fontproperties=orpheus_font)
     
     return line1, line2, line3,
 
