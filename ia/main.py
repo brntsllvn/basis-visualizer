@@ -3,17 +3,14 @@ Compilation report
 https://adviserinfo.sec.gov/compilation
 """
 
-"""
-Question to answer... how much AUM managed in the USA? 
-- federal and state
-"""
-
-
-
-
 import xml.etree.ElementTree as ET
+
+
 def parse_firm(firm, is_state):
     firm_data = {}
+
+    # Metadata
+    firm_data['FederalRgstn'] = not is_state
 
     # Parse Info
     firm_data['Info'] = firm.find('Info').attrib
@@ -24,9 +21,6 @@ def parse_firm(firm, is_state):
     # Parse Mailing Address
     mailing = firm.find('MailingAddr')
     firm_data['MailingAddr'] = mailing.attrib if mailing is not None else {}
-
-    # For convenience
-    firm_data['FederalRgstn'] = not is_state
 
     # Parse Registration
     if is_state:
@@ -132,7 +126,6 @@ def main():
             parsed_firm = parse_firm(firm, is_state)
             all_firms.append(parsed_firm)
     flattened_firms = flatten_list_of_dicts(all_firms)
-    print("hello")
     print_aum(flattened_firms)
 
 
